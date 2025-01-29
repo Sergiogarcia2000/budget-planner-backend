@@ -1,0 +1,58 @@
+# Compilación
+/build/
+/out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Gradle
+.gradle/
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Archivos de caché
+*.log
+*.lock
+
+# Archivos generados por Ktor
+/logs/
+*.db
+*.db-journal
+
+# Archivos de configuración locales
+.env
+local.properties
+
+# Archivos de pruebas
+/test-results/
+/test-output/
+
+# Docker
+*.tar
+**/docker-compose.override.yml
+
+# Archivos de dependencias
+*.jar
+*.war
+*.ear
+
+# Cobertura de código
+/jacoco/
+/coverage/
+/target/
+
+# Kotlin
+*.kotlin_module
+
+# Otros IDEs
+.vscode/
+*.swp
+*.swo

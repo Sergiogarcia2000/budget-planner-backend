@@ -1,0 +1,16 @@
+ktor:
+    application:
+        modules:
+            - application.MainKt.module
+    deployment:
+        port: 8080
+    database:
+      jdbcUrl: "jdbc:mariadb://localhost:3306/budgetplannerdb"
+      driverClassName: "org.mariadb.jdbc.Driver"
+      username: "miusuario"
+      password: "mipassword"
+      maximumPoolSize: 10
+jwt:
+  domain: "https://jwt-provider-domain/"
+  audience: "jwt-audience"
+  realm: "ktor sample app"
