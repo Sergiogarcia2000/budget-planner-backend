@@ -1,6 +1,7 @@
 package application
 
 import EnvironmentHandler
+import application.auth.SecurityConfig.configureSecurity
 import application.di.configureKoin
 import application.routes.configureRouting
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -26,6 +27,7 @@ fun Application.module() {
     DbManager.start()
 
     configureKoin()
+    configureSecurity()
     configureRouting()
     configureStatusPages()
 

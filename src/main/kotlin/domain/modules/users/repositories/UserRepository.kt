@@ -2,6 +2,7 @@ package domain.modules.users.repositories
 
 import data.entities.UsersTable
 import data.database.DbManager.dbQuery
+import domain.modules.users.models.FullUser
 import domain.modules.users.models.UserResponse
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -24,6 +25,13 @@ class UserRepository {
         UsersTable.selectAll()
             .where { UsersTable.email eq email}
             .map { toUserResponse(it) }
+            .singleOrNull()
+    }
+
+    suspend fun getFullUserByEmail(email: String): FullUser? = dbQuery {
+        UsersTable.selectAll()
+            .where { UsersTable.email eq email}
+            .map { toFullUser(it) }
             .singleOrNull()
     }
 
@@ -58,11 +66,16 @@ class UserRepository {
             .single()
     }
 
-    private fun toUserResponse(row: ResultRow): UserResponse {
-        return UserResponse(
-            id = row[UsersTable.id],
-            name = row[UsersTable.name],
-            email = row[UsersTable.email]
-        )
-    }
+    private fun toUserResponse(row: ResultRow) = UserResponse(
+        id = row[UsersTable.id],
+        name = row[UsersTable.name],
+        email = row[UsersTable.email]
+    )
+
+    private fun toFullUser(row: ResultRow) = FullUser(
+        id = row[UsersTable.id],
+        username = row[UsersTable.name],
+        email = row[UsersTable.email],
+        hashedPassword = row[UsersTable.hashedPassword]
+    )
 }

@@ -13,4 +13,6 @@ ktor:
 jwt:
   domain: "https://jwt-provider-domain/"
   audience: "jwt-audience"
-  realm: "ktor sample app"
+  realm: "Budget planner app"
+  secret: "super_secret_key"
+  issuer: "ktor-auth-server"

@@ -16,4 +16,10 @@ object EnvironmentHandler {
     val DATABASE_DRIVER: String by lazy { this["ktor.database.driverClassName"] ?: "org.mariadb.jdbc.Driver" }
     val DATABASE_USER: String by lazy { this["ktor.database.username"] ?: "defaultUser" }
     val DATABASE_PASSWORD: String by lazy { this["ktor.database.password"] ?: "defaultPassword" }
+
+    val JWT_SECRET: String by lazy { this["jwt.secret"] ?: "secret" }
+    val JWT_ISSUER: String by lazy { this["jwt.issuer"] ?: "issuer" }
+    val JWT_AUDIENCE: String by lazy { this["jwt.audience"] ?: "audience" }
+    val JWT_REALM: String by lazy { this["jwt.realm"] ?: "realm" }
+
 }

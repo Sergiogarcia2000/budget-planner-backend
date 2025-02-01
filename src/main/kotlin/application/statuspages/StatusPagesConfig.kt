@@ -11,7 +11,7 @@ import application.responses.ErrorResponse
 fun Application.configureStatusPages() {
     install(StatusPages) {
         exception<ValidationException> { call, cause ->
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Validation Error", "message" to cause.errors))
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Validationasd Error", "message" to cause.errors))
         }
         exception<NotFoundException> { call, cause ->
             call.respond(HttpStatusCode.NotFound, ErrorResponse("Not found", cause.message ?: "Entity not found"))

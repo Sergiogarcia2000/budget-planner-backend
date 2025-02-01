@@ -1,4 +1,4 @@
-package domain.modules.users.models
+package domain.modules.auth.models
 
 import domain.validation.Validatable
 import kotlinx.serialization.Serializable
@@ -8,16 +8,14 @@ import org.valiktor.functions.isNotBlank
 import org.valiktor.validate
 
 @Serializable
-data class CreateUserRequest (
-    val name: String,
+data class UserLogin(
     val email: String,
     val password: String
 ): Validatable {
     override fun validate() {
         validate(this) {
-            validate(CreateUserRequest::name).isNotBlank().hasSize(min = 3, max = 50)
-            validate(CreateUserRequest::email).isNotBlank().isEmail()
-            validate(CreateUserRequest::password).isNotBlank().hasSize(min = 8, max = 16)
+            validate(UserLogin::email).isNotBlank().isEmail()
+            validate(UserLogin::password).isNotBlank().hasSize(min = 8, max = 16)
         }
     }
 }
