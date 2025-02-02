@@ -49,7 +49,7 @@ class UserRepository {
             .single()
     }
 
-    suspend fun deleteUser(userId: Int) = dbQuery {
+    suspend fun deleteUser(userId: Int): Boolean = dbQuery {
         UsersTable.deleteWhere { UsersTable.id eq userId } > 0
     }
 

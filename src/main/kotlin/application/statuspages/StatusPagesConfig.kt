@@ -20,7 +20,7 @@ fun Application.configureStatusPages() {
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("Validation Error", cause.message ?: "Invalid input"))
         }
         exception<Throwable> { call, cause ->
-            call.respond(HttpStatusCode.InternalServerError, ErrorResponse("Unexpected Error", cause.message ?: "Something went wrong"))
+            call.respond(HttpStatusCode.InternalServerError, ErrorResponse("Unexpected Error", cause.stackTraceToString() ?: "Something went wrong"))
         }
     }
 }

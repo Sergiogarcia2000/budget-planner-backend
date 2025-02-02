@@ -2,6 +2,8 @@ package application.di
 
 import data.database.DbManager
 import domain.modules.auth.services.AuthService
+import domain.modules.categories.repositories.CategoryRepository
+import domain.modules.categories.services.CategoryService
 import io.ktor.server.application.*
 import domain.modules.users.repositories.UserRepository
 import domain.modules.users.services.UserService
@@ -17,8 +19,11 @@ fun Application.configureKoin() {
             module {
                 single { DbManager.start() }
                 single { UserRepository() }
+                single { CategoryRepository() }
+
                 single { AuthService(get()) }
                 single { UserService(get()) }
+                single { CategoryService(get()) }
             }
         )
     }
