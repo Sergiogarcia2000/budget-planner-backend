@@ -1,7 +1,7 @@
 package data.database
 
 import EnvironmentHandler
-import data.entities.UsersTable
+import data.entities.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -22,6 +22,10 @@ object DbManager {
 
             transaction {
                 SchemaUtils.create(UsersTable)
+                SchemaUtils.create(CategoriesTable)
+                SchemaUtils.create(ExpensesTable)
+                SchemaUtils.create(BudgetsTable)
+                SchemaUtils.create(CategoriesBudgetsTable)
             }
 
             initialized = true
