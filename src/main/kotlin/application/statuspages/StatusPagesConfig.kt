@@ -7,8 +7,12 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import application.responses.ErrorResponse
+import org.slf4j.LoggerFactory
 
 fun Application.configureStatusPages() {
+
+    val logger = LoggerFactory.getLogger("StatusPagesLogger")
+
     install(StatusPages) {
         exception<ValidationException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Validationasd Error", "message" to cause.errors))
@@ -20,7 +24,8 @@ fun Application.configureStatusPages() {
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("Validation Error", cause.message ?: "Invalid input"))
         }
         exception<Throwable> { call, cause ->
-            call.respond(HttpStatusCode.InternalServerError, ErrorResponse("Unexpected Error", cause.stackTraceToString() ?: "Something went wrong"))
+            logger.error("Error inesperado", cause)
+            call.respond(HttpStatusCode.InternalServerError, ErrorResponse("Unexpected Error", cause.stackTraceToString()))
         }
     }
 }

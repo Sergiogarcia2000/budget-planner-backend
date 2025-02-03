@@ -2,9 +2,8 @@ package domain.modules.categories.repositories
 
 import data.database.DbManager.dbQuery
 import data.entities.CategoriesTable
-import data.entities.UsersTable
+import data.extensions.andIfNotNull
 import data.extensions.queryEqOptional
-import data.extensions.queryNeqOptional
 import domain.modules.categories.models.CategoryResponse
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -19,16 +18,17 @@ class CategoryRepository {
 
     suspend fun getCategoryById(id: Int, userId: Int?): CategoryResponse? = dbQuery {
         CategoriesTable.selectAll()
-            .where { CategoriesTable.id eq id }
-            .queryEqOptional(CategoriesTable.userId, userId)
+            .where { (CategoriesTable.id eq id).andIfNotNull(userId) { CategoriesTable.userId eq it } }
             .map { toCategoryResponse(it) }
             .singleOrNull()
     }
 
     suspend fun getCategoryByName(userId: Int, name: String, categoryId: Int? = null): CategoryResponse? = dbQuery {
         CategoriesTable.selectAll()
-            .where {(CategoriesTable.name eq name) and (CategoriesTable.userId eq userId)}
-            .queryNeqOptional(CategoriesTable.id, categoryId)
+            .where {
+                (CategoriesTable.name eq name) and (CategoriesTable.userId eq userId)
+                    .andIfNotNull(categoryId) { CategoriesTable.id neq it }
+            }
             .map { toCategoryResponse(it) }
             .singleOrNull()
     }
@@ -50,7 +50,7 @@ class CategoryRepository {
             if (name != null) it[CategoriesTable.name] = name
         }
 
-        UsersTable.selectAll()
+        CategoriesTable.selectAll()
             .where { CategoriesTable.id eq id}
             .map { toCategoryResponse(it) }
             .single()

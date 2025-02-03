@@ -1,5 +1,6 @@
 package domain.modules.users.routes
 
+import application.responses.ErrorResponse
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -17,10 +18,13 @@ fun Route.userRoutes(userService: UserService) {
 
         get("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
-                ?: return@get call.respondText("Invalid ID", status = HttpStatusCode.BadRequest)
+                ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Bad Request", "Missing user id"))
 
             val user = userService.getUserById(id)
-                ?: return@get call.respondText("User not found", status = HttpStatusCode.NotFound)
+                ?: return@get call.respond(
+                    HttpStatusCode.NotFound,
+                    ErrorResponse("Not found", "User with id $id not found")
+                )
 
             call.respond(user)
         }
@@ -37,7 +41,7 @@ fun Route.userRoutes(userService: UserService) {
         patch("/{id}") {
             val request = call.receive<UpdateUserRequest>()
             val id = call.parameters["id"]?.toIntOrNull()
-                ?: return@patch call.respondText("Invalid ID", status = HttpStatusCode.BadRequest)
+                ?: return@patch call.respond(HttpStatusCode.BadRequest, ErrorResponse("Bad Request", "Missing user id"))
 
             userService.updateUser(id, request).fold(
                 onSuccess = { call.respond(HttpStatusCode.Created, it) },
@@ -47,7 +51,10 @@ fun Route.userRoutes(userService: UserService) {
 
         delete("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
-            ?: return@delete call.respondText("Invalid ID", status = HttpStatusCode.BadRequest)
+                ?: return@delete call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("Bad Request", "Missing user id")
+                )
 
             userService.deleteUser(id).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent, it) },
