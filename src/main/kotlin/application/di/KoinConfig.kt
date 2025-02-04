@@ -2,6 +2,8 @@ package application.di
 
 import data.database.DbManager
 import domain.modules.auth.services.AuthService
+import domain.modules.budgets.repositories.BudgetsRepository
+import domain.modules.budgets.services.BudgetsService
 import domain.modules.categories.repositories.CategoryRepository
 import domain.modules.categories.services.CategoryService
 import domain.modules.expenses.repositories.ExpensesRepository
@@ -23,11 +25,13 @@ fun Application.configureKoin() {
                 single { UserRepository() }
                 single { CategoryRepository() }
                 single { ExpensesRepository() }
+                single { BudgetsRepository() }
 
                 single { AuthService(get()) }
                 single { UserService(get()) }
                 single { CategoryService(get()) }
                 single { ExpensesService(get()) }
+                single { BudgetsService(get()) }
             }
         )
     }

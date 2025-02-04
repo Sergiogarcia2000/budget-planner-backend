@@ -1,6 +1,7 @@
 package domain.modules.categories.services
 
 import domain.exceptions.NotFoundException
+import domain.modules.categories.models.CategoryBudgetsResponse
 import domain.modules.categories.models.CategoryRequest
 import domain.modules.categories.models.CategoryResponse
 import domain.modules.categories.repositories.CategoryRepository
@@ -47,5 +48,13 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
         }
 
         return Result.success(categoryRepository.deleteCategory(id, userId))
+    }
+
+    suspend fun getCategoryBudgets(categoryId: Int, userId: Int): Result<CategoryBudgetsResponse> {
+        if (categoryRepository.getCategoryById(categoryId, userId) == null) {
+            return Result.failure(NotFoundException("Category $categoryId not found."))
+        }
+
+        return Result.success(categoryRepository.getCategoryBudgets(categoryId))
     }
 }

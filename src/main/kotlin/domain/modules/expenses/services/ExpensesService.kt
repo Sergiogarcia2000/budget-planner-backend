@@ -12,7 +12,7 @@ class ExpensesService(private val expensesRepository: ExpensesRepository) {
 
     suspend fun getAllExpenses(filter: ExpenseFilter): List<ExpenseResponse> = expensesRepository.getExpenses(filter)
 
-    suspend fun getExpense(id: Int, userId: Int): ExpenseResponse? = expensesRepository.getExpenseById(id, userId)
+    suspend fun getExpense(expenseId: Int, userId: Int): ExpenseResponse? = expensesRepository.getExpenseById(expenseId, userId)
 
     suspend fun create(userId: Int, request: CreateExpenseRequest): Result<ExpenseResponse> {
         return request.validateAndProcess { body ->
@@ -26,14 +26,13 @@ class ExpensesService(private val expensesRepository: ExpensesRepository) {
             if (expensesRepository.getExpenseById(expenseId, userId) == null) {
                 return@validateAndProcess Result.failure(NotFoundException("Expense with id $expenseId not found"))
             }
-            println("Updating expense with id $expenseId and user id $userId with body $body")
 
             val updated = expensesRepository.updateExpense(expenseId, userId, body)
             Result.success(updated)
         }
     }
 
-    suspend fun deleteExpense(userId: Int, expenseId: Int): Result<Boolean> {
+    suspend fun delete(userId: Int, expenseId: Int): Result<Boolean> {
         if (expensesRepository.getExpenseById(expenseId, userId) == null) {
             return Result.failure(NotFoundException("Expense with id $expenseId not found"))
         }

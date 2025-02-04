@@ -1,9 +1,11 @@
 package domain.modules.categories.repositories
 
 import data.database.DbManager.dbQuery
+import data.entities.CategoriesBudgetsTable
 import data.entities.CategoriesTable
 import data.extensions.andIfNotNull
 import data.extensions.queryEqOptional
+import domain.modules.categories.models.CategoryBudgetsResponse
 import domain.modules.categories.models.CategoryResponse
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -58,6 +60,15 @@ class CategoryRepository {
 
     suspend fun deleteCategory(id: Int, userId: Int): Boolean = dbQuery {
         CategoriesTable.deleteWhere { (CategoriesTable.id eq id) and (CategoriesTable.userId eq userId) } > 0
+    }
+
+    suspend fun getCategoryBudgets(categoryId: Int): CategoryBudgetsResponse = dbQuery {
+        val ids = (CategoriesBudgetsTable innerJoin CategoriesTable)
+            .select(CategoriesBudgetsTable.budgetId)
+            .where { (CategoriesBudgetsTable.categoryId eq categoryId) }
+            .map { it[CategoriesBudgetsTable.budgetId] }.toSet()
+
+        CategoryBudgetsResponse(ids)
     }
 
     private fun toCategoryResponse(row: ResultRow) = CategoryResponse(

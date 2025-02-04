@@ -38,6 +38,20 @@ fun Route.categoriesRoute(categoryService: CategoryService) {
             call.respond(HttpStatusCode.OK, category)
         }
 
+        get("/{id}/budgets") {
+            val categoryId = call.parameters["id"]?.toIntOrNull()
+                ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("Bad Request", "Missing category ID")
+                )
+            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+
+            categoryService.getCategoryBudgets(categoryId = categoryId, userId = userId).fold(
+                onSuccess = { call.respond(HttpStatusCode.OK, it) },
+                onFailure = { throw it }
+            )
+        }
+
         post {
             val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
             val request = call.receive<CategoryRequest>()

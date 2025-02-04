@@ -14,31 +14,26 @@ import java.time.format.DateTimeFormatter
 class ExpensesRepository {
 
     suspend fun getExpenses(filter: ExpenseFilter): List<ExpenseResponse> = dbQuery {
-        // 🔹 Construir la query de manera dinámica
         var query: Query = ExpensesTable.selectAll().where { ExpensesTable.userId eq filter.userId }
 
-        // 🔹 Aplicar filtros opcionales
         filter.categoryId?.let { query = query.andWhere { ExpensesTable.categoryId eq it } }
         filter.minAmount?.let { query = query.andWhere { ExpensesTable.amount greaterEq it } }
         filter.maxAmount?.let { query = query.andWhere { ExpensesTable.amount lessEq it } }
         filter.startDate?.let { query = query.andWhere { ExpensesTable.date greaterEq it } }
         filter.endDate?.let { query = query.andWhere { ExpensesTable.date lessEq it } }
 
-        // 🔹 Aplicar ordenación
         val orderColumn = when (filter.orderBy) {
             "amount" -> ExpensesTable.amount
             "date" -> ExpensesTable.date
             "category" -> ExpensesTable.categoryId
-            else -> ExpensesTable.date // 🔹 Default: ordenar por fecha
+            else -> ExpensesTable.date
         }
 
         val sortOrder = if (filter.orderDirection?.uppercase() == "ASC") SortOrder.ASC else SortOrder.DESC
         query = query.orderBy(orderColumn, sortOrder)
 
-        // 🔹 Aplicar paginación
         query = query.limit(filter.pageSize).offset(start = ((filter.page - 1) * filter.pageSize).toLong())
 
-        // 🔹 Ejecutar la query y mapear resultados
         query.map {
             it.toExpenseResponse()
         }

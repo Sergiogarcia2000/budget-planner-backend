@@ -1,6 +1,7 @@
 package application.routes
 
 import domain.modules.auth.services.AuthService
+import domain.modules.budgets.services.BudgetsService
 import domain.modules.categories.services.CategoryService
 import domain.modules.expenses.services.ExpensesService
 import io.ktor.server.application.*
@@ -13,8 +14,9 @@ fun Application.configureRouting() {
     val authService by inject<AuthService>()
     val categoryService by inject<CategoryService>()
     val expensesService by inject<ExpensesService>()
+    val budgetsService by inject<BudgetsService>()
 
     routing {
-        v1(userService, authService, categoryService, expensesService)
+        v1(userService, authService, categoryService, expensesService, budgetsService)
     }
 }

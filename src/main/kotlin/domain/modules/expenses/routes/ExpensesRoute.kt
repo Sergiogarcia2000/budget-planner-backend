@@ -78,7 +78,7 @@ fun Route.expensesRoute(expensesService: ExpensesService) {
             val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
 
             val request = call.receive<UpdateExpenseRequest>()
-            println(request)
+
             expensesService.update(userId, expenseId, request).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },
                 onFailure = { throw it }
@@ -93,7 +93,7 @@ fun Route.expensesRoute(expensesService: ExpensesService) {
                 )
             val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
 
-            expensesService.deleteExpense(userId, expenseId).fold(
+            expensesService.delete(userId, expenseId).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },
                 onFailure = { throw it }
             )
