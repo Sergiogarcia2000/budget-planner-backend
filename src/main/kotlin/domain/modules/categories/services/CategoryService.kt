@@ -1,5 +1,7 @@
 package domain.modules.categories.services
 
+import application.websockets.WebSocketConstants
+import application.websockets.WebSocketManager
 import domain.exceptions.NotFoundException
 import domain.modules.categories.models.CategoryBudgetsResponse
 import domain.modules.categories.models.CategoryRequest
@@ -12,8 +14,8 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
 
     suspend fun getAllCategories(userId: Int?): List<CategoryResponse> = categoryRepository.getAllCategories(userId)
 
-    suspend fun getCategoryById(id: Int, userId: Int?): CategoryResponse? =
-        categoryRepository.getCategoryById(id, userId)
+    suspend fun getCategoryById(categoryId: Int, userId: Int?): CategoryResponse? =
+        categoryRepository.getCategoryById(categoryId, userId)
 
     suspend fun create(userId: Int, request: CategoryRequest): Result<CategoryResponse> {
         return request.validateAndProcess { body ->
@@ -23,6 +25,14 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
             }
 
             val category = categoryRepository.createCategory(body.name, userId)
+
+            WebSocketManager.sendEvent(
+                userId = userId,
+                entityType = WebSocketConstants.EntityType.CATEGORY,
+                action = WebSocketConstants.Action.CREATED,
+                data = category
+            )
+
             Result.success(category)
         }
     }
@@ -38,16 +48,33 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
             }
 
             val categoryUpdated = categoryRepository.updateCategory(categoryId, body.name)
+
+            WebSocketManager.sendEvent(
+                userId = userId,
+                entityType = WebSocketConstants.EntityType.CATEGORY,
+                action = WebSocketConstants.Action.CREATED,
+                data = categoryUpdated
+            )
+
             Result.success(categoryUpdated)
         }
     }
 
-    suspend fun deleteCategory(id: Int, userId: Int): Result<Boolean> {
-        if (categoryRepository.getCategoryById(id, userId) == null) {
-            return Result.failure(NotFoundException("Category $id not found."))
+    suspend fun deleteCategory(categoryId: Int, userId: Int): Result<Boolean> {
+        if (categoryRepository.getCategoryById(categoryId, userId) == null) {
+            return Result.failure(NotFoundException("Category $categoryId not found."))
         }
 
-        return Result.success(categoryRepository.deleteCategory(id, userId))
+        val deleted = categoryRepository.deleteCategory(categoryId, userId)
+
+        WebSocketManager.sendEvent(
+            userId = userId,
+            entityType = WebSocketConstants.EntityType.CATEGORY,
+            action = WebSocketConstants.Action.CREATED,
+            data = categoryId
+        )
+
+        return Result.success(deleted)
     }
 
     suspend fun getCategoryBudgets(categoryId: Int, userId: Int): Result<CategoryBudgetsResponse> {

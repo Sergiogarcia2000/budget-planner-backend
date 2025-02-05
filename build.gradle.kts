@@ -19,11 +19,15 @@ repositories {
     mavenCentral()
 }
 
-val exposedVersion: String = "0.58.0"
+val exposedVersion = "0.58.0"
+val ktorVersion = "3.0.3"
+val logbackVersion = "1.4.14"
+val kotlinTestVersion = "2.1.10"
+val koinVersion = "3.5.0"
 dependencies {
 
     // Database
-    implementation(libs.h2)
+    implementation("com.h2database:h2:2.3.232")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
@@ -32,34 +36,31 @@ dependencies {
     implementation("com.zaxxer:HikariCP:6.2.1")
 
     // Koin DI
-    implementation("io.insert-koin:koin-core:3.5.0")
-    implementation("io.insert-koin:koin-ktor:3.5.0")
-    implementation("io.insert-koin:koin-logger-slf4j:3.5.0")
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("io.insert-koin:koin-ktor:$koinVersion")
+    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
     // Schema Validation
     implementation("org.valiktor:valiktor-core:0.12.0")
 
-    // Ktor
-    implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.server.call.logging)
-    implementation(libs.ktor.server.auth)
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.server.call.id)
-    implementation(libs.ktor.server.swagger)
-    implementation(libs.ktor.server.openapi)
-    implementation(libs.ktor.server.compression)
-    implementation(libs.ktor.server.default.headers)
-    implementation(libs.ktor.server.cors)
-    implementation(libs.ktor.server.host.common)
-    implementation(libs.ktor.server.status.pages)
-    implementation(libs.ktor.server.request.validation)
-    implementation(libs.ktor.server.auth.jwt)
-    implementation(libs.ktor.server.netty)
-    implementation(libs.logback.classic)
-    implementation(libs.ktor.server.config.yaml)
-    testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.kotlin.test.junit)
-
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-id:$ktorVersion")
+    implementation("io.ktor:ktor-server-websockets:$ktorVersion")
+    implementation("io.ktor:ktor-server-compression:$ktorVersion")
+    implementation("io.ktor:ktor-server-default-headers:$ktorVersion")
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
+    implementation("io.ktor:ktor-server-host-common:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.ktor:ktor-server-request-validation:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    implementation("io.ktor:ktor-server-config-yaml:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinTestVersion")
 }

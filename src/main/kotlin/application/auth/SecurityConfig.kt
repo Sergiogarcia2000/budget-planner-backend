@@ -27,10 +27,10 @@ object SecurityConfig {
         install(Authentication) {
             jwt(AUTH_JWT) {
                 realm = EnvironmentHandler.JWT_REALM
-                verifier(JWT.require(algorithm).withIssuer(EnvironmentHandler.JWT_ISSUER).build())
+                verifier(JwtConfig.verifier)
 
                 validate { credential ->
-                    if (credential.payload.getClaim("email").asString().isNotEmpty()) {
+                    if (!credential.payload.getClaim("email").asString().isNullOrEmpty()) {
                         JWTPrincipal(credential.payload)
                     } else null
                 }

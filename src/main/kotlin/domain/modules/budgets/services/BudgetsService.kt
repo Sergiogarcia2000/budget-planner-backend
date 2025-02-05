@@ -1,7 +1,7 @@
 package domain.modules.budgets.services
 
-import application.responses.ErrorResponse
-import data.database.DbManager.dbQuery
+import application.websockets.WebSocketConstants
+import application.websockets.WebSocketManager
 import domain.exceptions.NotFoundException
 import domain.modules.budgets.models.*
 import domain.modules.budgets.repositories.BudgetsRepository
@@ -16,17 +16,33 @@ class BudgetsService(private val budgetsRepository: BudgetsRepository) {
     suspend fun create(userId: Int, request: CreateBudgetRequest): Result<BudgetResponse> {
         return request.validateAndProcess { body ->
             val budget = budgetsRepository.createBudget(userId, body)
+
+            WebSocketManager.sendEvent(
+                userId = userId,
+                entityType = WebSocketConstants.EntityType.BUDGET,
+                action = WebSocketConstants.Action.CREATED,
+                data = budget
+            )
+
             Result.success(budget)
         }
     }
 
-    suspend fun update(budgetId: Int, userId: Int, request: UpdateBudgetRequest): Result<Boolean> {
+    suspend fun update(budgetId: Int, userId: Int, request: UpdateBudgetRequest): Result<BudgetResponse> {
         return request.validateAndProcess { body ->
             if (budgetsRepository.getBudgetById(budgetId, userId) == null) {
                 return@validateAndProcess Result.failure(NotFoundException("Budget with id $budgetId not found"))
             }
 
-            val updated = budgetsRepository.updateBudget(budgetId, userId, request)
+            val updated = budgetsRepository.updateBudget(budgetId, userId, body)
+
+            WebSocketManager.sendEvent(
+                userId = userId,
+                entityType = WebSocketConstants.EntityType.BUDGET,
+                action = WebSocketConstants.Action.UPDATED,
+                data = updated
+            )
+
             Result.success(updated)
         }
     }
@@ -36,7 +52,16 @@ class BudgetsService(private val budgetsRepository: BudgetsRepository) {
             return Result.failure(NotFoundException("Budget with id $budgetId not found"))
         }
 
-        return Result.success(budgetsRepository.deleteBudget(budgetId, userId))
+        val deleted = budgetsRepository.deleteBudget(budgetId, userId)
+
+        WebSocketManager.sendEvent(
+            userId = userId,
+            entityType = WebSocketConstants.EntityType.BUDGET,
+            action = WebSocketConstants.Action.DELETED,
+            data = budgetId
+        )
+
+        return Result.success(deleted)
     }
 
     suspend fun getBudgetCategories(budgetId: Int, userId: Int): Result<BudgetCategoriesResponse> {

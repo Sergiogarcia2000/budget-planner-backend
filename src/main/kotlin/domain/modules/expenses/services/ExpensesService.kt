@@ -1,5 +1,7 @@
 package domain.modules.expenses.services
 
+import application.websockets.WebSocketConstants
+import application.websockets.WebSocketManager
 import domain.exceptions.NotFoundException
 import domain.modules.expenses.models.CreateExpenseRequest
 import domain.modules.expenses.models.ExpenseFilter
@@ -17,17 +19,32 @@ class ExpensesService(private val expensesRepository: ExpensesRepository) {
     suspend fun create(userId: Int, request: CreateExpenseRequest): Result<ExpenseResponse> {
         return request.validateAndProcess { body ->
             val expense = expensesRepository.createExpense(userId, body)
+            WebSocketManager.sendEvent(
+                userId = userId,
+                entityType = WebSocketConstants.EntityType.EXPENSE,
+                action = WebSocketConstants.Action.CREATED,
+                data = expense
+            )
+
             Result.success(expense)
         }
     }
 
-    suspend fun update(userId: Int, expenseId: Int, request: UpdateExpenseRequest): Result<Boolean> {
+    suspend fun update(userId: Int, expenseId: Int, request: UpdateExpenseRequest): Result<ExpenseResponse> {
         return request.validateAndProcess { body ->
             if (expensesRepository.getExpenseById(expenseId, userId) == null) {
                 return@validateAndProcess Result.failure(NotFoundException("Expense with id $expenseId not found"))
             }
 
             val updated = expensesRepository.updateExpense(expenseId, userId, body)
+
+            WebSocketManager.sendEvent(
+                userId = userId,
+                entityType = WebSocketConstants.EntityType.EXPENSE,
+                action = WebSocketConstants.Action.UPDATED,
+                data = updated
+            )
+
             Result.success(updated)
         }
     }
@@ -36,6 +53,14 @@ class ExpensesService(private val expensesRepository: ExpensesRepository) {
         if (expensesRepository.getExpenseById(expenseId, userId) == null) {
             return Result.failure(NotFoundException("Expense with id $expenseId not found"))
         }
+
+        WebSocketManager.sendEvent(
+            userId = userId,
+            entityType = WebSocketConstants.EntityType.EXPENSE,
+            action = WebSocketConstants.Action.DELETED,
+            data = expenseId
+        )
+
         return Result.success(expensesRepository.deleteExpense(expenseId, userId))
     }
 }

@@ -39,9 +39,9 @@ class ExpensesRepository {
         }
     }
 
-    suspend fun getExpenseById(id: Int, userId: Int): ExpenseResponse? = dbQuery {
+    suspend fun getExpenseById(expenseId: Int, userId: Int): ExpenseResponse? = dbQuery {
         ExpensesTable.selectAll()
-            .where { (ExpensesTable.id eq id) and (ExpensesTable.userId eq userId) }
+            .where { (ExpensesTable.id eq expenseId) and (ExpensesTable.userId eq userId) }
             .map { it.toExpenseResponse() }
             .singleOrNull()
     }
@@ -61,16 +61,21 @@ class ExpensesRepository {
             .single()
     }
 
-    suspend fun updateExpense(id: Int, userId: Int, expense: UpdateExpenseRequest): Boolean = dbQuery {
-        ExpensesTable.update({ (ExpensesTable.id eq id) and (ExpensesTable.userId eq userId) }) { row ->
+    suspend fun updateExpense(expenseId: Int, userId: Int, expense: UpdateExpenseRequest): ExpenseResponse = dbQuery {
+        ExpensesTable.update({ (ExpensesTable.id eq expenseId) and (ExpensesTable.userId eq userId) }) { row ->
             expense.reason?.let { row[reason] = expense.reason }
             expense.amount?.let { row[amount] = expense.amount }
-            expense.categoryId?.let { row[categoryId] = id }
-        } > 0
+            expense.categoryId?.let { row[categoryId] = expenseId }
+        }
+
+        ExpensesTable.selectAll()
+            .where{ ExpensesTable.id eq expenseId }
+            .map { it.toExpenseResponse() }
+            .single()
     }
 
-    suspend fun deleteExpense(id: Int, userId: Int) = dbQuery {
-        ExpensesTable.deleteWhere { (ExpensesTable.id eq id) and (ExpensesTable.userId eq userId) } > 0
+    suspend fun deleteExpense(expenseId: Int, userId: Int) = dbQuery {
+        ExpensesTable.deleteWhere { (ExpensesTable.id eq expenseId) and (ExpensesTable.userId eq userId) } > 0
     }
 
     private fun ResultRow.toExpenseResponse() = ExpenseResponse(

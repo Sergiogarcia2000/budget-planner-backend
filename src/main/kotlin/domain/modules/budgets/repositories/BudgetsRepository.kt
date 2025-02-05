@@ -64,19 +64,24 @@ class BudgetsRepository {
             .single()
     }
 
-    suspend fun updateBudget(id: Int, userId: Int, budget: UpdateBudgetRequest) = dbQuery {
-        BudgetsTable.update({ (BudgetsTable.id eq id) and (BudgetsTable.userId eq userId) }) { row ->
+    suspend fun updateBudget(budgetId: Int, userId: Int, budget: UpdateBudgetRequest) = dbQuery {
+        BudgetsTable.update({ (BudgetsTable.id eq budgetId) and (BudgetsTable.userId eq userId) }) { row ->
             budget.name?.let { row[name] = it }
             budget.limit?.let { row[limit] = it }
             budget.duration?.let { row[duration] = it }
             budget.startDate?.let { row[startDate] = it.toLocalDate() }
             budget.recurrent?.let { row[recurrent] = it }
             budget.finished?.let { row[finished] = it }
-        } > 0
+        }
+
+        BudgetsTable.selectAll()
+            .where {BudgetsTable.id eq budgetId }
+            .map { it.toBudgetResponse() }
+            .single()
     }
 
-    suspend fun deleteBudget(id: Int, userId: Int) = dbQuery {
-        BudgetsTable.deleteWhere { (BudgetsTable.id eq id) and (BudgetsTable.userId eq userId) } > 0
+    suspend fun deleteBudget(budgetId: Int, userId: Int) = dbQuery {
+        BudgetsTable.deleteWhere { (BudgetsTable.id eq budgetId) and (BudgetsTable.userId eq userId) } > 0
     }
 
     suspend fun getBudgetCategories(budgetId: Int, userId: Int) = dbQuery {
