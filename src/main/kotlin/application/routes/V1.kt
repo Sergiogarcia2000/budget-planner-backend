@@ -1,7 +1,7 @@
 package application.routes
 
-import application.auth.JwtConfig
 import application.auth.SecurityConfig.AUTH_JWT
+import application.websockets.webSocketRoutes
 import domain.modules.auth.routes.authRoutes
 import domain.modules.auth.services.AuthService
 import domain.modules.budgets.routes.budgetsRoute

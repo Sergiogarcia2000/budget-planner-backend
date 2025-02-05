@@ -6,25 +6,25 @@ import domain.exceptions.NotFoundException
 import domain.modules.categories.models.CategoryBudgetsResponse
 import domain.modules.categories.models.CategoryRequest
 import domain.modules.categories.models.CategoryResponse
-import domain.modules.categories.repositories.CategoryRepository
+import domain.modules.categories.repositories.CategoriesRepository
 import domain.validation.validateAndProcess
 import java.lang.IllegalArgumentException
 
-class CategoryService(private val categoryRepository: CategoryRepository) {
+class CategoryService(private val categoriesRepository: CategoriesRepository) {
 
-    suspend fun getAllCategories(userId: Int?): List<CategoryResponse> = categoryRepository.getAllCategories(userId)
+    suspend fun getAllCategories(userId: Int?): List<CategoryResponse> = categoriesRepository.getAllCategories(userId)
 
     suspend fun getCategoryById(categoryId: Int, userId: Int?): CategoryResponse? =
-        categoryRepository.getCategoryById(categoryId, userId)
+        categoriesRepository.getCategoryById(categoryId, userId)
 
     suspend fun create(userId: Int, request: CategoryRequest): Result<CategoryResponse> {
         return request.validateAndProcess { body ->
 
-            if (categoryRepository.getCategoryByName(userId, body.name) != null) {
+            if (categoriesRepository.getCategoryByName(userId, body.name) != null) {
                 return@validateAndProcess Result.failure(IllegalArgumentException("Category ${body.name} already exists."))
             }
 
-            val category = categoryRepository.createCategory(body.name, userId)
+            val category = categoriesRepository.createCategory(body.name, userId)
 
             WebSocketManager.sendEvent(
                 userId = userId,
@@ -39,15 +39,15 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
 
     suspend fun updateCategory(userId: Int, categoryId: Int, request: CategoryRequest): Result<CategoryResponse> {
         return request.validateAndProcess { body ->
-            if (categoryRepository.getCategoryById(categoryId, userId) == null) {
+            if (categoriesRepository.getCategoryById(categoryId, userId) == null) {
                 return@validateAndProcess Result.failure(NotFoundException("Category $categoryId not found."))
             }
 
-            if (categoryRepository.getCategoryByName(userId, body.name, categoryId) != null) {
+            if (categoriesRepository.getCategoryByName(userId, body.name, categoryId) != null) {
                 return@validateAndProcess Result.failure(IllegalArgumentException("Category ${body.name} already exists."))
             }
 
-            val categoryUpdated = categoryRepository.updateCategory(categoryId, body.name)
+            val categoryUpdated = categoriesRepository.updateCategory(categoryId, body.name)
 
             WebSocketManager.sendEvent(
                 userId = userId,
@@ -61,11 +61,11 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
     }
 
     suspend fun deleteCategory(categoryId: Int, userId: Int): Result<Boolean> {
-        if (categoryRepository.getCategoryById(categoryId, userId) == null) {
+        if (categoriesRepository.getCategoryById(categoryId, userId) == null) {
             return Result.failure(NotFoundException("Category $categoryId not found."))
         }
 
-        val deleted = categoryRepository.deleteCategory(categoryId, userId)
+        val deleted = categoriesRepository.deleteCategory(categoryId, userId)
 
         WebSocketManager.sendEvent(
             userId = userId,
@@ -78,10 +78,10 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
     }
 
     suspend fun getCategoryBudgets(categoryId: Int, userId: Int): Result<CategoryBudgetsResponse> {
-        if (categoryRepository.getCategoryById(categoryId, userId) == null) {
+        if (categoriesRepository.getCategoryById(categoryId, userId) == null) {
             return Result.failure(NotFoundException("Category $categoryId not found."))
         }
 
-        return Result.success(categoryRepository.getCategoryBudgets(categoryId))
+        return Result.success(categoriesRepository.getCategoryBudgets(categoryId))
     }
 }

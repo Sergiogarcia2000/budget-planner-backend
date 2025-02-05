@@ -1,7 +1,6 @@
-package application.routes
+package application.websockets
 
 import application.auth.JwtConfig
-import application.websockets.WebSocketManager
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
@@ -11,7 +10,7 @@ fun Route.webSocketRoutes() {
 
     webSocket("/websocket") {
         send("Welcome to websocket!")
-        val token = call.request.queryParameters["token"] // 🔹 Extrae el token de la URL
+        val token = call.request.queryParameters["token"]
             ?: return@webSocket close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Missing token"))
 
         val principal = JwtConfig.validateToken(token)
@@ -30,7 +29,7 @@ fun Route.webSocketRoutes() {
         } catch (e: Exception) {
             println("WebSocket error: ${e.localizedMessage}")
         } finally {
-            WebSocketManager.removeConnection(userId, this) // ✅ Al desconectar, lo eliminamos
+            WebSocketManager.removeConnection(userId, this)
         }
     }
 }

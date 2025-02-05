@@ -11,27 +11,27 @@ import java.time.LocalDateTime
 class UserRepository {
 
     suspend fun getAllUsers(): List<UserResponse> = dbQuery {
-        UsersTable.selectAll().map { toUserResponse(it) }
+        UsersTable.selectAll().map { it.toUserResponse() }
     }
 
-    suspend fun getUserById(id: Int): UserResponse? = dbQuery {
+    suspend fun getUserById(userId: Int): UserResponse? = dbQuery {
         UsersTable.selectAll()
-            .where { UsersTable.id eq id}
-            .map { toUserResponse(it) }
+            .where { UsersTable.id eq userId}
+            .map { it.toUserResponse() }
             .singleOrNull()
     }
 
     suspend fun getUserByEmail(email: String): UserResponse? = dbQuery {
         UsersTable.selectAll()
             .where { UsersTable.email eq email}
-            .map { toUserResponse(it) }
+            .map { it.toUserResponse() }
             .singleOrNull()
     }
 
     suspend fun getFullUserByEmail(email: String): FullUser? = dbQuery {
         UsersTable.selectAll()
             .where { UsersTable.email eq email}
-            .map { toFullUser(it) }
+            .map { it.toFullUser() }
             .singleOrNull()
     }
 
@@ -45,7 +45,7 @@ class UserRepository {
 
         UsersTable.selectAll()
             .where { UsersTable.id eq id }
-            .map { toUserResponse(it) }
+            .map { it.toUserResponse() }
             .single()
     }
 
@@ -53,29 +53,29 @@ class UserRepository {
         UsersTable.deleteWhere { UsersTable.id eq userId } > 0
     }
 
-    suspend fun updateUser(id: Int, name: String?, email: String?, hashedPassword: String?): UserResponse = dbQuery {
-        UsersTable.update({ UsersTable.id eq id }) {
+    suspend fun updateUser(userId: Int, name: String?, email: String?, hashedPassword: String?): UserResponse = dbQuery {
+        UsersTable.update({ UsersTable.id eq userId }) {
             if (name != null) it[UsersTable.name] = name
             if (email != null) it[UsersTable.email] = email
             if (hashedPassword != null) it[UsersTable.hashedPassword] = hashedPassword
         }
 
         UsersTable.selectAll()
-            .where {UsersTable.id eq id}
-            .map { toUserResponse(it) }
+            .where {UsersTable.id eq userId}
+            .map { it.toUserResponse() }
             .single()
     }
 
-    private fun toUserResponse(row: ResultRow) = UserResponse(
-        id = row[UsersTable.id],
-        name = row[UsersTable.name],
-        email = row[UsersTable.email]
+    private fun ResultRow.toUserResponse() = UserResponse(
+        id = this[UsersTable.id],
+        name = this[UsersTable.name],
+        email = this[UsersTable.email]
     )
 
-    private fun toFullUser(row: ResultRow) = FullUser(
-        id = row[UsersTable.id],
-        username = row[UsersTable.name],
-        email = row[UsersTable.email],
-        hashedPassword = row[UsersTable.hashedPassword]
+    private fun ResultRow.toFullUser() = FullUser(
+        id = this[UsersTable.id],
+        username = this[UsersTable.name],
+        email = this[UsersTable.email],
+        hashedPassword = this[UsersTable.hashedPassword]
     )
 }

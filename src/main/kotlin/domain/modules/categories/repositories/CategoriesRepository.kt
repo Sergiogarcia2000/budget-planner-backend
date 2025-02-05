@@ -10,19 +10,27 @@ import domain.modules.categories.models.CategoryResponse
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-class CategoryRepository {
+class CategoriesRepository {
 
     suspend fun getAllCategories(userId: Int?): List<CategoryResponse> = dbQuery {
         CategoriesTable.selectAll()
             .queryEqOptional(CategoriesTable.userId, userId)
-            .map { toCategoryResponse(it) }
+            .map { it.toCategoryResponse() }
     }
 
-    suspend fun getCategoryById(id: Int, userId: Int?): CategoryResponse? = dbQuery {
+    suspend fun getCategoryById(categoryId: Int, userId: Int?): CategoryResponse? = dbQuery {
         CategoriesTable.selectAll()
-            .where { (CategoriesTable.id eq id).andIfNotNull(userId) { CategoriesTable.userId eq it } }
-            .map { toCategoryResponse(it) }
+            .where { (CategoriesTable.id eq categoryId).andIfNotNull(userId) { CategoriesTable.userId eq it } }
+            .map { it.toCategoryResponse() }
             .singleOrNull()
+    }
+
+    suspend fun checkCategoriesByIds(categoriesIds: Set<Int>, userId: Int): Set<Int> = dbQuery {
+        val categories = CategoriesTable.selectAll()
+            .where { (CategoriesTable.id inList categoriesIds) }
+            .map { it[CategoriesTable.id] }.toSet()
+
+        categoriesIds.subtract(categories)
     }
 
     suspend fun getCategoryByName(userId: Int, name: String, categoryId: Int? = null): CategoryResponse? = dbQuery {
@@ -31,7 +39,7 @@ class CategoryRepository {
                 (CategoriesTable.name eq name) and (CategoriesTable.userId eq userId)
                     .andIfNotNull(categoryId) { CategoriesTable.id neq it }
             }
-            .map { toCategoryResponse(it) }
+            .map { it.toCategoryResponse() }
             .singleOrNull()
     }
 
@@ -43,7 +51,7 @@ class CategoryRepository {
 
         CategoriesTable.selectAll()
             .where { CategoriesTable.id eq id}
-            .map { toCategoryResponse(it) }
+            .map { it.toCategoryResponse() }
             .single()
     }
 
@@ -54,7 +62,7 @@ class CategoryRepository {
 
         CategoriesTable.selectAll()
             .where { CategoriesTable.id eq id}
-            .map { toCategoryResponse(it) }
+            .map { it.toCategoryResponse() }
             .single()
     }
 
@@ -71,8 +79,8 @@ class CategoryRepository {
         CategoryBudgetsResponse(ids)
     }
 
-    private fun toCategoryResponse(row: ResultRow) = CategoryResponse(
-        id = row[CategoriesTable.id],
-        name = row[CategoriesTable.name],
+    private fun ResultRow.toCategoryResponse() = CategoryResponse(
+        id = this[CategoriesTable.id],
+        name = this[CategoriesTable.name],
     )
 }

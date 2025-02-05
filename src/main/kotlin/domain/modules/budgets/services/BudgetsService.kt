@@ -5,9 +5,10 @@ import application.websockets.WebSocketManager
 import domain.exceptions.NotFoundException
 import domain.modules.budgets.models.*
 import domain.modules.budgets.repositories.BudgetsRepository
+import domain.modules.categories.repositories.CategoriesRepository
 import domain.validation.validateAndProcess
 
-class BudgetsService(private val budgetsRepository: BudgetsRepository) {
+class BudgetsService(private val budgetsRepository: BudgetsRepository, private val categoriesRepository: CategoriesRepository) {
 
     suspend fun getAllBudgets(filter: BudgetFilter): List<BudgetResponse> = budgetsRepository.getAllBudgets(filter)
 
@@ -76,6 +77,11 @@ class BudgetsService(private val budgetsRepository: BudgetsRepository) {
         return request.validateAndProcess {
             if (budgetsRepository.getBudgetById(budgetId = budgetId, userId = userId) == null) {
                 return@validateAndProcess Result.failure(NotFoundException("Budget with id $budgetId not found"))
+            }
+
+            val notFoundIds = categoriesRepository.checkCategoriesByIds(request.categories, userId)
+            if (notFoundIds.isNotEmpty()) {
+                return@validateAndProcess Result.failure(NotFoundException("Following IDs not found: ${notFoundIds.joinToString()}"))
             }
 
             val updatedBudget = budgetsRepository.addBudgetCategories(budgetId = budgetId, categoriesIds = request)

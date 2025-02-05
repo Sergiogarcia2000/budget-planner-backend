@@ -4,7 +4,7 @@ import data.database.DbManager
 import domain.modules.auth.services.AuthService
 import domain.modules.budgets.repositories.BudgetsRepository
 import domain.modules.budgets.services.BudgetsService
-import domain.modules.categories.repositories.CategoryRepository
+import domain.modules.categories.repositories.CategoriesRepository
 import domain.modules.categories.services.CategoryService
 import domain.modules.expenses.repositories.ExpensesRepository
 import domain.modules.expenses.services.ExpensesService
@@ -23,15 +23,15 @@ fun Application.configureKoin() {
             module {
                 single { DbManager.start() }
                 single { UserRepository() }
-                single { CategoryRepository() }
+                single { CategoriesRepository() }
                 single { ExpensesRepository() }
                 single { BudgetsRepository() }
 
                 single { AuthService(get()) }
                 single { UserService(get()) }
                 single { CategoryService(get()) }
-                single { ExpensesService(get()) }
-                single { BudgetsService(get()) }
+                single { ExpensesService(get(), get()) }
+                single { BudgetsService(get(), get()) }
             }
         )
     }
