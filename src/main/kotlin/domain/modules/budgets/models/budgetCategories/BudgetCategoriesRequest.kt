@@ -1,4 +1,4 @@
-package domain.modules.budgets.models
+package domain.modules.budgets.models.budgetCategories
 
 import domain.validation.Validatable
 import kotlinx.serialization.Serializable

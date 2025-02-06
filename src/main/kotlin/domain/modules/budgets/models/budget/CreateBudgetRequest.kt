@@ -1,4 +1,4 @@
-package domain.modules.budgets.models
+package domain.modules.budgets.models.budget
 
 import domain.validation.Validatable
 import org.valiktor.functions.*

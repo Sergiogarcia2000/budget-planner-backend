@@ -3,7 +3,12 @@ package domain.modules.budgets.repositories
 import data.database.DbManager.dbQuery
 import data.entities.BudgetsTable
 import data.entities.CategoriesBudgetsTable
-import domain.modules.budgets.models.*
+import domain.modules.budgets.models.budget.BudgetFilter
+import domain.modules.budgets.models.budget.BudgetResponse
+import domain.modules.budgets.models.budget.CreateBudgetRequest
+import domain.modules.budgets.models.budget.UpdateBudgetRequest
+import domain.modules.budgets.models.budgetCategories.BudgetCategoriesRequest
+import domain.modules.budgets.models.budgetCategories.BudgetCategoriesResponse
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -12,7 +17,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 
-class BudgetsRepository {
+class BudgetRepository {
     suspend fun getAllBudgets(filter: BudgetFilter): List<BudgetResponse> = dbQuery {
         var query: Query = BudgetsTable.selectAll().where { BudgetsTable.userId eq filter.userId }
 

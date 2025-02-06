@@ -7,8 +7,11 @@ import io.ktor.server.routing.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.http.*
+import org.koin.ktor.ext.inject
 
-fun Route.authRoutes(authService: AuthService) {
+fun Route.authRoutes() {
+    val authService: AuthService by application.inject<AuthService>()
+
     route("/auth") {
         post("/register") {
             val request = call.receive<CreateUserRequest>()

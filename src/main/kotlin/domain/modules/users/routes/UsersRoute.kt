@@ -8,8 +8,11 @@ import io.ktor.server.routing.*
 import domain.modules.users.models.CreateUserRequest
 import domain.modules.users.models.UpdateUserRequest
 import domain.modules.users.services.UserService
+import org.koin.ktor.ext.inject
 
-fun Route.userRoutes(userService: UserService) {
+fun Route.userRoutes() {
+    val userService: UserService by application.inject<UserService>()
+
     route("/users") {
 
         get {

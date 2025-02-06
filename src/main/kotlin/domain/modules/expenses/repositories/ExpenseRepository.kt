@@ -11,12 +11,13 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class ExpensesRepository {
+class ExpenseRepository {
 
     suspend fun getExpenses(filter: ExpenseFilter): List<ExpenseResponse> = dbQuery {
         var query: Query = ExpensesTable.selectAll().where { ExpensesTable.userId eq filter.userId }
 
         filter.categoryId?.let { query = query.andWhere { ExpensesTable.categoryId eq it } }
+        filter.categoriesIds?.let { query = query.andWhere { ExpensesTable.categoryId inList it } }
         filter.minAmount?.let { query = query.andWhere { ExpensesTable.amount greaterEq it } }
         filter.maxAmount?.let { query = query.andWhere { ExpensesTable.amount lessEq it } }
         filter.startDate?.let { query = query.andWhere { ExpensesTable.date greaterEq it } }

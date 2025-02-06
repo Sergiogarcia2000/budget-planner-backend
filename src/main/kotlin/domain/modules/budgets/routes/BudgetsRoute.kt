@@ -1,26 +1,30 @@
 package domain.modules.budgets.routes
 
+import application.extensions.getUserId
 import application.responses.ErrorResponse
-import domain.modules.budgets.models.BudgetCategoriesRequest
-import domain.modules.budgets.models.BudgetFilter
-import domain.modules.budgets.models.CreateBudgetRequest
-import domain.modules.budgets.models.UpdateBudgetRequest
-import domain.modules.budgets.services.BudgetsService
+import domain.modules.budgets.models.budget.BudgetFilter
+import domain.modules.budgets.models.budget.CreateBudgetRequest
+import domain.modules.budgets.models.budget.UpdateBudgetRequest
+import domain.modules.budgets.routes.budgetCategories.budgetCategoriesRoute
+import domain.modules.budgets.services.BudgetCategoriesService
+import domain.modules.budgets.services.BudgetService
+import domain.modules.budgets.services.BudgetSummaryService
 import io.ktor.http.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.response.*
-import io.ktor.server.websocket.*
-import io.ktor.websocket.*
+import org.koin.ktor.ext.inject
 import java.time.LocalDate
 
-fun Route.budgetsRoute(budgetsService: BudgetsService) {
+fun Route.budgetsRoute() {
+    val budgetService: BudgetService by application.inject<BudgetService>()
+    val budgetCategoriesService: BudgetCategoriesService by application.inject<BudgetCategoriesService>()
+    val budgetSummaryService: BudgetSummaryService by application.inject<BudgetSummaryService>()
+
     route("/budgets") {
 
         get {
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
             val minLimit = call.request.queryParameters["minLimit"]?.toIntOrNull()
             val maxLimit = call.request.queryParameters["maxLimit"]?.toIntOrNull()
             val startDate = call.request.queryParameters["startDate"]?.let { LocalDate.parse(it) }
@@ -46,7 +50,7 @@ fun Route.budgetsRoute(budgetsService: BudgetsService) {
                 pageSize = pageSize
             )
 
-            val budgets = budgetsService.getAllBudgets(filter)
+            val budgets = budgetService.getAllBudgets(filter)
             call.respond(HttpStatusCode.OK, budgets)
         }
 
@@ -56,19 +60,19 @@ fun Route.budgetsRoute(budgetsService: BudgetsService) {
                     HttpStatusCode.BadRequest,
                     ErrorResponse("Bad Request", "Missing budget ID")
                 )
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
 
-            val budget = budgetsService.getBudget(budgetId = budgetId, userId = userId)
+            val budget = budgetService.getBudget(budgetId = budgetId, userId = userId)
                 ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("NotFound", "Budget not found"))
 
             call.respond(HttpStatusCode.OK, budget)
         }
 
         post {
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
             val budgetRequest = call.receive<CreateBudgetRequest>()
 
-            budgetsService.create(userId = userId, request = budgetRequest).fold(
+            budgetService.create(userId = userId, request = budgetRequest).fold(
                 onSuccess = { call.respond(HttpStatusCode.Created, it) },
                 onFailure = { throw it }
             )
@@ -78,10 +82,10 @@ fun Route.budgetsRoute(budgetsService: BudgetsService) {
             val budgetId = call.parameters["id"]?.toIntOrNull()
                 ?: return@patch call.respond(HttpStatusCode.BadRequest, "Missing budget ID")
 
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
             val request = call.receive<UpdateBudgetRequest>()
 
-            budgetsService.update(budgetId = budgetId, userId = userId, request = request).fold(
+            budgetService.update(budgetId = budgetId, userId = userId, request = request).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },
                 onFailure = { throw it }
             )
@@ -93,56 +97,35 @@ fun Route.budgetsRoute(budgetsService: BudgetsService) {
                     HttpStatusCode.BadRequest,
                     ErrorResponse("Bad Request", "Missing Budget ID")
                 )
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
 
-            budgetsService.delete(budgetId = budgetId, userId = userId).fold(
+            budgetService.delete(budgetId = budgetId, userId = userId).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },
                 onFailure = { throw it }
             )
         }
 
-        route("/{id}/categories") {
+        get("/summary") {
+            val userId = call.getUserId()
 
-            get {
-                val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
-                val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing Budget ID")
-                )
-
-                budgetsService.getBudgetCategories(budgetId, userId).fold(
-                    onSuccess = { call.respond(HttpStatusCode.OK, it) },
-                    onFailure = { throw it }
-                )
-            }
-
-            patch {
-                val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
-                val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@patch call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing Budget ID")
-                )
-                val budgetCategories = call.receive<BudgetCategoriesRequest>()
-
-                budgetsService.addBudgetCategories(budgetId = budgetId, userId = userId, request = budgetCategories).fold(
-                    onSuccess = { call.respond(HttpStatusCode.OK, it) },
-                    onFailure = { throw it }
-                )
-            }
-
-            delete {
-                val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
-                val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing Budget ID")
-                )
-                val budgetCategories = call.receive<BudgetCategoriesRequest>()
-
-                budgetsService.removeBudgetCategories(budgetId = budgetId, userId = userId, request = budgetCategories ).fold(
-                    onSuccess = { call.respond(HttpStatusCode.NoContent) },
-                    onFailure = { throw it }
-                )
-            }
+            val summaries = budgetSummaryService.getBudgetsSummaries(userId = userId)
+            call.respond(HttpStatusCode.OK, summaries)
         }
+
+        get("/{id}/summary") {
+            val budgetId = call.parameters["id"]?.toIntOrNull()
+                ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("Bad Request", "Missing Budget ID")
+                )
+            val userId = call.getUserId()
+
+            budgetSummaryService.getBudgetSummary(budgetId = budgetId, userId = userId).fold(
+                onSuccess = { call.respond(HttpStatusCode.OK, it) },
+                onFailure = { throw it }
+            )
+        }
+
+        budgetCategoriesRoute(budgetCategoriesService)
     }
 }

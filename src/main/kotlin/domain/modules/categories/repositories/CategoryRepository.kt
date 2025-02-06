@@ -10,7 +10,7 @@ import domain.modules.categories.models.CategoryResponse
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-class CategoriesRepository {
+class CategoryRepository {
 
     suspend fun getAllCategories(userId: Int?): List<CategoryResponse> = dbQuery {
         CategoriesTable.selectAll()

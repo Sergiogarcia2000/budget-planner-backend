@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 data class ExpenseFilter(
     val userId: Int,
     val categoryId: Int? = null,
+    val categoriesIds: Set<Int>? = null,
     val minAmount: Double? = null,
     val maxAmount: Double? = null,
     val startDate: LocalDateTime? = null,

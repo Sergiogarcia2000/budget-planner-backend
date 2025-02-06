@@ -4,16 +4,19 @@ import application.responses.ErrorResponse
 import domain.modules.expenses.models.CreateExpenseRequest
 import domain.modules.expenses.models.ExpenseFilter
 import domain.modules.expenses.models.UpdateExpenseRequest
-import domain.modules.expenses.services.ExpensesService
+import domain.modules.expenses.services.ExpenseService
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import org.koin.ktor.ext.inject
 import java.time.LocalDateTime
 
-fun Route.expensesRoute(expensesService: ExpensesService) {
+fun Route.expensesRoute() {
+    val expenseService: ExpenseService by application.inject()
+
     route("/expenses") {
 
         get {
@@ -40,7 +43,7 @@ fun Route.expensesRoute(expensesService: ExpensesService) {
                 page = page,
                 pageSize = pageSize
             )
-            val expenses = expensesService.getAllExpenses(filter)
+            val expenses = expenseService.getAllExpenses(filter)
             call.respond(HttpStatusCode.OK, expenses)
         }
 
@@ -53,7 +56,7 @@ fun Route.expensesRoute(expensesService: ExpensesService) {
 
             val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
 
-            val expense = expensesService.getExpense(expenseId, userId)
+            val expense = expenseService.getExpense(expenseId, userId)
                 ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("Not found", "Expense not found"))
 
             call.respond(HttpStatusCode.OK, expense)
@@ -63,7 +66,7 @@ fun Route.expensesRoute(expensesService: ExpensesService) {
             val expense = call.receive<CreateExpenseRequest>()
             val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
 
-            expensesService.create(userId, expense).fold(
+            expenseService.create(userId, expense).fold(
                 onSuccess = { call.respond(HttpStatusCode.Created, it) },
                 onFailure = { throw it }
             )
@@ -79,7 +82,7 @@ fun Route.expensesRoute(expensesService: ExpensesService) {
 
             val request = call.receive<UpdateExpenseRequest>()
 
-            expensesService.update(userId, expenseId, request).fold(
+            expenseService.update(userId, expenseId, request).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },
                 onFailure = { throw it }
             )
@@ -93,7 +96,7 @@ fun Route.expensesRoute(expensesService: ExpensesService) {
                 )
             val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
 
-            expensesService.delete(userId, expenseId).fold(
+            expenseService.delete(userId, expenseId).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },
                 onFailure = { throw it }
             )
