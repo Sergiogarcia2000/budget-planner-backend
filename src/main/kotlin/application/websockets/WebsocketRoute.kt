@@ -9,7 +9,6 @@ import kotlinx.coroutines.channels.consumeEach
 fun Route.webSocketRoutes() {
 
     webSocket("/websocket") {
-        send("Welcome to websocket!")
         val token = call.request.queryParameters["token"]
             ?: return@webSocket close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Missing token"))
 
@@ -19,12 +18,10 @@ fun Route.webSocketRoutes() {
         val userId = principal.payload.getClaim("id")?.asInt()
             ?: return@webSocket close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid userId"))
 
-        println("Usuario conectado!: $userId")
-
         WebSocketManager.addConnection(userId, this)
 
         try {
-            incoming.consumeEach { frame ->
+            incoming.consumeEach { _ ->
             }
         } catch (e: Exception) {
             println("WebSocket error: ${e.localizedMessage}")

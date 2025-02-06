@@ -1,11 +1,11 @@
 package domain.modules.categories.routes
 
-import application.responses.ErrorResponse
+import application.extensions.getBaseFilter
+import application.extensions.getUserId
+import application.extensions.respondBadRequest
 import domain.modules.categories.models.CategoryRequest
 import domain.modules.categories.services.CategoryService
 import io.ktor.http.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -17,36 +17,28 @@ fun Route.categoriesRoute() {
     route("/categories") {
 
         get {
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
 
-            call.respond(HttpStatusCode.OK, categoryService.getAllCategories(userId))
+            val baseFilter = call.getBaseFilter()
+
+            call.respond(HttpStatusCode.OK, categoryService.getAllCategories(userId, baseFilter))
         }
 
         get("/{id}") {
+            val userId = call.getUserId()
             val categoryId = call.parameters["id"]?.toIntOrNull()
-                ?: return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing category ID")
-                )
+                ?: return@get call.respondBadRequest("Category")
 
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
-
-            val category = categoryService.getCategoryById(categoryId, userId)
-                ?: return@get call.respond(
-                    HttpStatusCode.NotFound,
-                    ErrorResponse("Not Found", "Category with id $categoryId not found")
-                )
-
-            call.respond(HttpStatusCode.OK, category)
+            categoryService.getCategoryById(categoryId, userId).fold(
+                onSuccess = { call.respond(HttpStatusCode.OK, it) },
+                onFailure = { call.respond(HttpStatusCode.BadRequest) }
+            )
         }
 
         get("/{id}/budgets") {
+            val userId = call.getUserId()
             val categoryId = call.parameters["id"]?.toIntOrNull()
-                ?: return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing category ID")
-                )
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+                ?: return@get call.respondBadRequest("Category")
 
             categoryService.getCategoryBudgets(categoryId = categoryId, userId = userId).fold(
                 onSuccess = { call.respond(HttpStatusCode.OK, it) },
@@ -55,7 +47,7 @@ fun Route.categoriesRoute() {
         }
 
         post {
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
             val request = call.receive<CategoryRequest>()
 
             categoryService.create(userId, request).fold(
@@ -65,12 +57,9 @@ fun Route.categoriesRoute() {
         }
 
         patch("/{id}") {
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
             val categoryId = call.parameters["id"]?.toIntOrNull()
-                ?: return@patch call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing category ID")
-                )
+                ?: return@patch call.respondBadRequest("Category")
 
             val request = call.receive<CategoryRequest>()
 
@@ -81,12 +70,9 @@ fun Route.categoriesRoute() {
         }
 
         delete("/{id}") {
-            val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()!!
+            val userId = call.getUserId()
             val categoryId = call.parameters["id"]?.toIntOrNull()
-                ?: return@delete call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing category ID")
-                )
+                ?: return@delete call.respondBadRequest("Category")
 
             categoryService.deleteCategory(categoryId, userId).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },

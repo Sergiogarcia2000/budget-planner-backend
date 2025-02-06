@@ -14,7 +14,12 @@ class BudgetService(private val budgetRepository: BudgetRepository) {
 
     suspend fun getAllBudgets(filter: BudgetFilter): List<BudgetResponse> = budgetRepository.getAllBudgets(filter)
 
-    suspend fun getBudget(budgetId: Int, userId: Int): BudgetResponse? = budgetRepository.getBudgetById(budgetId, userId)
+    suspend fun getBudget(budgetId: Int, userId: Int): Result<BudgetResponse> {
+        val budget = budgetRepository.getBudgetById(budgetId, userId)
+            ?: return Result.failure(NotFoundException("Budget with ID $budgetId not found"))
+
+        return Result.success(budget)
+    }
 
     suspend fun create(userId: Int, request: CreateBudgetRequest): Result<BudgetResponse> {
         return request.validateAndProcess { body ->

@@ -31,7 +31,7 @@ object DbManager {
             initialized = true
             return database
         } else {
-            throw IllegalStateException("Database already initialized!")
+            error("Database already initialized!")
         }
     }
     suspend fun <T> dbQuery(block: () -> T): T =

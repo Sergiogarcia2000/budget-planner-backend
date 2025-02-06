@@ -1,5 +1,6 @@
 package domain.modules.categories.repositories
 
+import application.models.BaseFilter
 import data.database.DbManager.dbQuery
 import data.entities.CategoriesBudgetsTable
 import data.entities.CategoriesTable
@@ -12,10 +13,22 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class CategoryRepository {
 
-    suspend fun getAllCategories(userId: Int?): List<CategoryResponse> = dbQuery {
-        CategoriesTable.selectAll()
-            .queryEqOptional(CategoriesTable.userId, userId)
-            .map { it.toCategoryResponse() }
+    suspend fun getAllCategories(userId: Int?, filter: BaseFilter): List<CategoryResponse> = dbQuery {
+        var query: Query = CategoriesTable.selectAll().queryEqOptional(CategoriesTable.userId, userId)
+
+        val orderColumn = when (filter.orderBy) {
+            "id" -> CategoriesTable.id
+            else -> CategoriesTable.name
+        }
+
+        val sortOrder = if (filter.orderDirection?.uppercase() == "ASC") SortOrder.ASC else SortOrder.DESC
+        query = query.orderBy(orderColumn, sortOrder)
+
+        query = query.limit(filter.pageSize).offset(start = ((filter.page - 1) * filter.pageSize).toLong())
+
+        query.map {
+            it.toCategoryResponse()
+        }
     }
 
     suspend fun getCategoryById(categoryId: Int, userId: Int?): CategoryResponse? = dbQuery {

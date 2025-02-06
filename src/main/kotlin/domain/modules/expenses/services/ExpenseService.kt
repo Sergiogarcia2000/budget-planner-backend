@@ -18,7 +18,12 @@ class ExpenseService(
 
     suspend fun getAllExpenses(filter: ExpenseFilter): List<ExpenseResponse> = expenseRepository.getExpenses(filter)
 
-    suspend fun getExpense(expenseId: Int, userId: Int): ExpenseResponse? = expenseRepository.getExpenseById(expenseId, userId)
+    suspend fun getExpense(expenseId: Int, userId: Int): Result<ExpenseResponse> {
+        val expense = expenseRepository.getExpenseById(expenseId, userId)
+            ?: return Result.failure(NotFoundException("Expense with ID $expenseId not found"))
+
+        return Result.success(expense)
+    }
 
     suspend fun create(userId: Int, request: CreateExpenseRequest): Result<ExpenseResponse> {
         return request.validateAndProcess { body ->

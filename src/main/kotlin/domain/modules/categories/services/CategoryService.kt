@@ -1,5 +1,6 @@
 package domain.modules.categories.services
 
+import application.models.BaseFilter
 import application.websockets.WebSocketConstants
 import application.websockets.WebSocketManager
 import domain.exceptions.NotFoundException
@@ -12,10 +13,14 @@ import java.lang.IllegalArgumentException
 
 class CategoryService(private val categoryRepository: CategoryRepository) {
 
-    suspend fun getAllCategories(userId: Int?): List<CategoryResponse> = categoryRepository.getAllCategories(userId)
+    suspend fun getAllCategories(userId: Int?, filter: BaseFilter): List<CategoryResponse> = categoryRepository.getAllCategories(userId, filter)
 
-    suspend fun getCategoryById(categoryId: Int, userId: Int?): CategoryResponse? =
-        categoryRepository.getCategoryById(categoryId, userId)
+    suspend fun getCategoryById(categoryId: Int, userId: Int?): Result<CategoryResponse> {
+        val category =  categoryRepository.getCategoryById(categoryId, userId)
+            ?: return Result.failure(NotFoundException("Category with ID $categoryId not found"))
+
+        return Result.success(category)
+    }
 
     suspend fun create(userId: Int, request: CategoryRequest): Result<CategoryResponse> {
         return request.validateAndProcess { body ->

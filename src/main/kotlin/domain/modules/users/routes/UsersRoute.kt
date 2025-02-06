@@ -1,6 +1,8 @@
 package domain.modules.users.routes
 
-import application.responses.ErrorResponse
+import application.extensions.respondBadRequest
+import application.extensions.respondNotFount
+import application.models.ErrorResponse
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -21,13 +23,10 @@ fun Route.userRoutes() {
 
         get("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
-                ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Bad Request", "Missing user id"))
+                ?: return@get call.respondBadRequest("User")
 
             val user = userService.getUserById(id)
-                ?: return@get call.respond(
-                    HttpStatusCode.NotFound,
-                    ErrorResponse("Not found", "User with id $id not found")
-                )
+                ?: return@get call.respondNotFount("User", id)
 
             call.respond(user)
         }

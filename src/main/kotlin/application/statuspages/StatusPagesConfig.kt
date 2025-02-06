@@ -6,7 +6,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
-import application.responses.ErrorResponse
+import application.models.ErrorResponse
 import org.slf4j.LoggerFactory
 
 fun Application.configureStatusPages() {

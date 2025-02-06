@@ -1,5 +1,5 @@
 package domain.validation
 
-interface Validatable {
+fun interface Validatable {
     fun validate()
 }

@@ -1,7 +1,8 @@
 package domain.modules.budgets.routes
 
+import application.extensions.getBaseFilter
 import application.extensions.getUserId
-import application.responses.ErrorResponse
+import application.extensions.respondBadRequest
 import domain.modules.budgets.models.budget.BudgetFilter
 import domain.modules.budgets.models.budget.CreateBudgetRequest
 import domain.modules.budgets.models.budget.UpdateBudgetRequest
@@ -31,10 +32,8 @@ fun Route.budgetsRoute() {
             val endDate = call.request.queryParameters["endDate"]?.let { LocalDate.parse(it) }
             val recurrent = call.request.queryParameters["recurrent"]?.toBoolean()
             val finished = call.request.queryParameters["finished"]?.toBoolean()
-            val orderBy = call.request.queryParameters["orderBy"]
-            val orderDirection = call.request.queryParameters["orderDirection"]
-            val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
-            val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 10
+
+            val baseFilter = call.getBaseFilter()
 
             val filter = BudgetFilter(
                 userId = userId,
@@ -44,10 +43,10 @@ fun Route.budgetsRoute() {
                 endDate = endDate,
                 recurrent = recurrent,
                 finished = finished,
-                orderBy = orderBy,
-                orderDirection = orderDirection,
-                page = page,
-                pageSize = pageSize
+                orderBy = baseFilter.orderBy,
+                orderDirection = baseFilter.orderDirection,
+                page = baseFilter.page,
+                pageSize = baseFilter.pageSize
             )
 
             val budgets = budgetService.getAllBudgets(filter)
@@ -55,17 +54,14 @@ fun Route.budgetsRoute() {
         }
 
         get("/{id}") {
-            val budgetId = call.parameters["id"]?.toIntOrNull()
-                ?: return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing budget ID")
-                )
             val userId = call.getUserId()
+            val budgetId = call.parameters["id"]?.toIntOrNull()
+                ?: return@get call.respondBadRequest("Budget")
 
-            val budget = budgetService.getBudget(budgetId = budgetId, userId = userId)
-                ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("NotFound", "Budget not found"))
-
-            call.respond(HttpStatusCode.OK, budget)
+            budgetService.getBudget(budgetId = budgetId, userId = userId).fold(
+                onSuccess = {  call.respond(HttpStatusCode.OK, it) },
+                onFailure = { throw it }
+            )
         }
 
         post {
@@ -79,10 +75,10 @@ fun Route.budgetsRoute() {
         }
 
         patch("/{id}") {
-            val budgetId = call.parameters["id"]?.toIntOrNull()
-                ?: return@patch call.respond(HttpStatusCode.BadRequest, "Missing budget ID")
-
             val userId = call.getUserId()
+            val budgetId = call.parameters["id"]?.toIntOrNull()
+                ?: return@patch call.respondBadRequest("Budget")
+
             val request = call.receive<UpdateBudgetRequest>()
 
             budgetService.update(budgetId = budgetId, userId = userId, request = request).fold(
@@ -92,12 +88,9 @@ fun Route.budgetsRoute() {
         }
 
         delete("/{id}") {
-            val budgetId = call.parameters["id"]?.toIntOrNull()
-                ?: return@delete call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing Budget ID")
-                )
             val userId = call.getUserId()
+            val budgetId = call.parameters["id"]?.toIntOrNull()
+                ?: return@delete call.respondBadRequest("Budget")
 
             budgetService.delete(budgetId = budgetId, userId = userId).fold(
                 onSuccess = { call.respond(HttpStatusCode.NoContent) },
@@ -113,12 +106,9 @@ fun Route.budgetsRoute() {
         }
 
         get("/{id}/summary") {
-            val budgetId = call.parameters["id"]?.toIntOrNull()
-                ?: return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse("Bad Request", "Missing Budget ID")
-                )
             val userId = call.getUserId()
+            val budgetId = call.parameters["id"]?.toIntOrNull()
+                ?: return@get call.respondBadRequest("Budget")
 
             budgetSummaryService.getBudgetSummary(budgetId = budgetId, userId = userId).fold(
                 onSuccess = { call.respond(HttpStatusCode.OK, it) },

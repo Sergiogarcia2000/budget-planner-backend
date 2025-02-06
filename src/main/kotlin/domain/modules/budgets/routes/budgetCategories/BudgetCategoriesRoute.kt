@@ -1,7 +1,7 @@
 package domain.modules.budgets.routes.budgetCategories
 
 import application.extensions.getUserId
-import application.responses.ErrorResponse
+import application.extensions.respondBadRequest
 import domain.modules.budgets.models.budgetCategories.BudgetCategoriesRequest
 import domain.modules.budgets.services.BudgetCategoriesService
 import io.ktor.http.*
@@ -14,10 +14,7 @@ fun Route.budgetCategoriesRoute(budgetCategoriesService: BudgetCategoriesService
 
         get {
             val userId = call.getUserId()
-            val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse("Bad Request", "Missing Budget ID")
-            )
+            val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondBadRequest("Budget")
 
             budgetCategoriesService.getBudgetCategories(budgetId, userId).fold(
                 onSuccess = { call.respond(HttpStatusCode.OK, it) },
@@ -27,10 +24,7 @@ fun Route.budgetCategoriesRoute(budgetCategoriesService: BudgetCategoriesService
 
         patch {
             val userId = call.getUserId()
-            val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@patch call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse("Bad Request", "Missing Budget ID")
-            )
+            val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@patch call.respondBadRequest("Budget")
             val budgetCategories = call.receive<BudgetCategoriesRequest>()
 
             budgetCategoriesService.addBudgetCategories(budgetId = budgetId, userId = userId, request = budgetCategories).fold(
@@ -41,10 +35,7 @@ fun Route.budgetCategoriesRoute(budgetCategoriesService: BudgetCategoriesService
 
         delete {
             val userId = call.getUserId()
-            val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse("Bad Request", "Missing Budget ID")
-            )
+            val budgetId = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondBadRequest("Budget")
             val budgetCategories = call.receive<BudgetCategoriesRequest>()
 
             budgetCategoriesService.removeBudgetCategories(budgetId = budgetId, userId = userId, request = budgetCategories ).fold(
