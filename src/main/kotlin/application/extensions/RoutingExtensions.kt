@@ -21,11 +21,11 @@ fun RoutingCall.respondBadRequest(paramName: String) {
     }
 }
 
-fun RoutingCall.respondNotFount(paramName: String, id: Int) {
+fun RoutingCall.respondNotFound(paramName: String, id: Int) {
     launch {
         respond(
             HttpStatusCode.NotFound,
-            ErrorResponse("Bad Request", "$paramName with ID $id not found")
+            ErrorResponse("Not Found", "$paramName with ID $id not found")
         )
     }
 }

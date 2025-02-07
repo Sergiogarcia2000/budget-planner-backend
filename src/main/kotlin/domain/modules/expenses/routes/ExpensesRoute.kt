@@ -3,6 +3,7 @@ package domain.modules.expenses.routes
 import application.extensions.getBaseFilter
 import application.extensions.getUserId
 import application.extensions.respondBadRequest
+import application.extensions.respondNotFound
 import domain.modules.expenses.models.CreateExpenseRequest
 import domain.modules.expenses.models.ExpenseFilter
 import domain.modules.expenses.models.UpdateExpenseRequest

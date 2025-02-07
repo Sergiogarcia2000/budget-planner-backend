@@ -26,7 +26,9 @@ dependencies {
     // Database
     implementation(libs.h2)
     implementation(libs.exposed.core)
+    implementation(libs.exposed.java.time)
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.dao)
     implementation(libs.mariadb.client)
     implementation(libs.hikaricp)
 
@@ -48,6 +50,7 @@ dependencies {
     implementation(libs.ktor.server.call.id)
     implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.openapi)
+    implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.compression)
     implementation(libs.ktor.server.default.headers)
     implementation(libs.ktor.server.cors)

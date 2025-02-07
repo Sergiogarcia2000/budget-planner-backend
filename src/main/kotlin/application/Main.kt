@@ -43,8 +43,6 @@ fun Application.module() {
     configureRouting()
     configureStatusPages()
 
-
-
     install(CORS) {
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)

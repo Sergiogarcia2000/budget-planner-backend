@@ -1,7 +1,7 @@
 package domain.modules.users.routes
 
 import application.extensions.respondBadRequest
-import application.extensions.respondNotFount
+import application.extensions.respondNotFound
 import application.models.ErrorResponse
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -26,7 +26,7 @@ fun Route.userRoutes() {
                 ?: return@get call.respondBadRequest("User")
 
             val user = userService.getUserById(id)
-                ?: return@get call.respondNotFount("User", id)
+                ?: return@get call.respondNotFound("User", id)
 
             call.respond(user)
         }

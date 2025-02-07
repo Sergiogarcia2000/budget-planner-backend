@@ -21,7 +21,6 @@ class ExpenseService(
     suspend fun getExpense(expenseId: Int, userId: Int): Result<ExpenseResponse> {
         val expense = expenseRepository.getExpenseById(expenseId, userId)
             ?: return Result.failure(NotFoundException("Expense with ID $expenseId not found"))
-
         return Result.success(expense)
     }
 
