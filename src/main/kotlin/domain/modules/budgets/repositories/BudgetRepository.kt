@@ -89,6 +89,12 @@ class BudgetRepository {
         BudgetsTable.deleteWhere { (BudgetsTable.id eq budgetId) and (BudgetsTable.userId eq userId) } > 0
     }
 
+    suspend fun getBudgetsByCategory(categoryId: Int): List<Int> = dbQuery {
+        CategoriesBudgetsTable.select(CategoriesBudgetsTable.budgetId)
+            .where { (CategoriesBudgetsTable.categoryId eq categoryId) }
+            .map { it[CategoriesBudgetsTable.budgetId] }
+    }
+
     suspend fun getBudgetCategories(budgetId: Int, userId: Int) = dbQuery {
         val ids = (CategoriesBudgetsTable innerJoin BudgetsTable)
             .select(CategoriesBudgetsTable.categoryId)

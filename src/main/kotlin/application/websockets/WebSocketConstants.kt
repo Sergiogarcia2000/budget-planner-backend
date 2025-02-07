@@ -5,6 +5,7 @@ object WebSocketConstants {
         const val EXPENSE = "EXPENSE"
         const val BUDGET = "BUDGET"
         const val CATEGORY = "CATEGORY"
+        const val BUDGET_SUMMARY = "BUDGET_SUMMARY"
     }
 
     object Action {

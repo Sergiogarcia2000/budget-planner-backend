@@ -1,5 +1,6 @@
 package domain.modules.expenses.services
 
+import application.events.BudgetEventHelper
 import application.websockets.WebSocketConstants
 import application.websockets.WebSocketManager
 import domain.exceptions.NotFoundException
@@ -13,7 +14,8 @@ import domain.validation.validateAndProcess
 
 class ExpenseService(
     private val expenseRepository: ExpenseRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val budgetEventHelper: BudgetEventHelper
 ) {
 
     suspend fun getAllExpenses(filter: ExpenseFilter): List<ExpenseResponse> = expenseRepository.getExpenses(filter)
@@ -39,6 +41,8 @@ class ExpenseService(
                 data = expense
             )
 
+            budgetEventHelper.notifyBudgetsAffectedByCategory(body.categoryId, userId)
+
             Result.success(expense)
         }
     }
@@ -62,6 +66,7 @@ class ExpenseService(
                 data = updated
             )
 
+            budgetEventHelper.notifyBudgetsAffectedByCategory(updated.category, userId)
             Result.success(updated)
         }
     }

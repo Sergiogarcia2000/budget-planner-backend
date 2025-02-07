@@ -1,5 +1,8 @@
 package domain.modules.budgets.models.budgetSummary
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class BudgetSummaryResponse(
     val budgetId: Int,
     val name: String,
